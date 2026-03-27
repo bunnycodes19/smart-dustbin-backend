@@ -3,7 +3,6 @@ const cors = require("cors");
 const { Pool } = require("pg");
 
 const app = express();
-const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -13,7 +12,7 @@ const pool = new Pool({
   user: "postgres",
   host: "localhost",
   database: "dustbin_db",
-  password: "sql", // your password
+  password: "sql",
   port: 5432,
 });
 
@@ -38,20 +37,18 @@ app.post("/data", async (req, res) => {
   try {
     let { bin_id, fill_percentage, battery } = req.body;
 
-    // 🔴 FIX: Convert to numbers safely
     fill_percentage = Math.round(parseFloat(fill_percentage));
     battery = battery !== undefined ? Math.round(parseFloat(battery)) : null;
 
-    // Validation
     if (!bin_id || isNaN(fill_percentage)) {
       return res.status(400).json({ error: "Invalid data" });
     }
 
     const query = `
-            INSERT INTO dustbin_data (bin_id, fill_percentage, battery)
-            VALUES ($1, $2, $3)
-            RETURNING *;
-        `;
+      INSERT INTO dustbin_data (bin_id, fill_percentage, battery)
+      VALUES ($1, $2, $3)
+      RETURNING *;
+    `;
 
     const values = [bin_id, fill_percentage, battery];
 
@@ -83,6 +80,9 @@ app.get("/data", async (req, res) => {
   }
 });
 
+// ✅ CORRECT PORT HANDLING (ONLY ONCE)
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
