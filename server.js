@@ -7,13 +7,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔴 PostgreSQL Connection
+// ✅ CONNECT TO RAILWAY POSTGRES (NO LOCALHOST)
 const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "dustbin_db",
-  password: "sql",
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 // Test DB connection
@@ -26,13 +25,13 @@ pool.connect((err, client, release) => {
   }
 });
 
-// Routes
+// ROUTES
 
 app.get("/", (req, res) => {
   res.send("Smart Dustbin Backend Running");
 });
 
-// 🔴 INSERT DATA INTO DATABASE
+// INSERT DATA
 app.post("/data", async (req, res) => {
   try {
     let { bin_id, fill_percentage, battery } = req.body;
@@ -66,7 +65,7 @@ app.post("/data", async (req, res) => {
   }
 });
 
-// 🔴 FETCH DATA FROM DATABASE
+// FETCH DATA
 app.get("/data", async (req, res) => {
   try {
     const result = await pool.query(
@@ -80,7 +79,7 @@ app.get("/data", async (req, res) => {
   }
 });
 
-// ✅ CORRECT PORT HANDLING (ONLY ONCE)
+// ✅ CORRECT PORT FOR RAILWAY
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
